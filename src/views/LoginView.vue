@@ -2,35 +2,73 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import SnackBar from "@/components/SnackBar.vue";
+import { HTTP } from "@/plugins/axios";
 
+/* Variables */
 const router = useRouter();
+const username = ref("user");
 const password = ref("");
+const passwordField = ref(null);
+const loading = ref(false);
 const snackbar = reactive({
   text: "",
   timeout: null,
   color: "",
   show: false,
 });
+const options = reactive([
+  {
+    value: "user",
+    text: "Participante",
+  },
+  {
+    value: "admin",
+    text: "Administrador",
+  },
+]);
 
-const login = () => {
+/* Acciones */
+/* const getCsrfToken = async () => {
+  const response = await HTTP.get("/sanctum/csrf-cookie");
+  return response.data.csrf_token;
+}; */
+const login = async () => {
   try {
+    loading.value = true;
     if (password.value === "") {
-      showSnackBar("Ingrese la contraseña", 2000, "orange-lighten-2", true);
+      showSnackBar("Ingrese la contraseña", 2000, "orange-lighten-2");
       return;
     }
-    router.push({
-      path: "/upload",
+
+    //await getCsrfToken();
+
+    const response = await HTTP.post("/login", {
+      username: username.value,
+      password: password.value,
     });
+    if (response.data.token) {
+      // Lógica para guardar el token y redirigir
+      // Por ejemplo, almacenar el token en localStorage
+      localStorage.setItem("token", response.data.token);
+      router.push({ path: "/upload" });
+    }
   } catch (error) {
-    showSnackBar(error, 2000, "warning", true);
+    console.error(error);
+    showSnackBar(error.response.data.error, 2000, "error");
+  } finally {
+    loading.value = false;
   }
 };
 
+/* Utilidades */
 const showSnackBar = (text, timeout, color) => {
   snackbar.text = text;
   snackbar.timeout = timeout;
   snackbar.color = color;
   snackbar.show = true;
+};
+const focusPassword = () => {
+  passwordField.value.focus();
 };
 </script>
 
@@ -44,20 +82,36 @@ const showSnackBar = (text, timeout, color) => {
         Procuraduria General de la Nación
       </v-card-title>
       <v-card-text class="mt-12">
-        <v-row>
-          <v-col cols="12">
-            <v-text-field
-              v-model="password"
-              prepend-inner-icon="mdi-lock"
-              placeholder="Ingresar Contraseña"
-              label="Contraseña"
-              type="password"
-            ></v-text-field>
-          </v-col>
-        </v-row>
+        <v-form @submit.prevent="login">
+          <v-row>
+            <v-col cols="12">
+              <v-autocomplete
+                v-model="username"
+                label="Tipo de usuario"
+                :items="options"
+                item-value="value"
+                item-title="text"
+                @keydown.enter="focusPassword"
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
+                v-model="password"
+                prepend-inner-icon="mdi-lock"
+                placeholder="Ingresar Contraseña"
+                ref="passwordField"
+                label="Contraseña"
+                type="password"
+                @keydown.enter="login"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-form>
       </v-card-text>
       <v-card-actions>
-        <v-btn block color="primary" variant="flat" @click="login">ingresar </v-btn>
+        <v-btn :loading="loading" block color="primary" variant="flat" @click="login"
+          >ingresar
+        </v-btn>
       </v-card-actions>
     </v-card>
     <SnackBar :snackbar="snackbar" />

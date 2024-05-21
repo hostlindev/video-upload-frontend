@@ -1,10 +1,23 @@
 <script setup>
 import { RouterLink, useRouter } from "vue-router";
+import { HTTP } from "@/plugins/axios";
+
 const router = useRouter();
-const logout = () => {
-  router.push({
-    path: "/login",
-  });
+
+/* Acciones */
+const logout = async () => {
+  try {
+    // Hacer una solicitud al backend para revocar el token
+    await HTTP.post("/logout");
+
+    // Eliminar el token del localStorage
+    localStorage.removeItem("token");
+
+    // Redirigir al usuario a la página de login
+    router.push({ path: "/login" });
+  } catch (error) {
+    console.error("Error al cerrar sesión:", error);
+  }
 };
 </script>
 <template>
