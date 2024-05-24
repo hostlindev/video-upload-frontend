@@ -1,14 +1,14 @@
 <script setup>
 const props = defineProps({
-  load: {
+  uploadProgress: {
     type: Number,
     required: true,
   },
 });
-
 </script>
+
 <template>
-  <v-progress-linear v-model="props.load" stripped color="light-blue" height="25">
+  <v-progress-linear v-model="props.uploadProgress" stripped color="light-blue" height="25">
     <template v-slot:default="{ value }">
       <strong>{{ Math.ceil(value) }}%</strong>
     </template>

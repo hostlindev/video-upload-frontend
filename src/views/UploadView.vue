@@ -18,13 +18,15 @@ const snackbar = reactive({
   color: "",
   show: false,
 });
-const link = ref("https://enlace.prueba.com/1asdsDSESe123242#?343433");
-const load = ref(90);
+const link = ref("");
+const uploadProgress = ref(null);
 const disabled = ref(false);
 
 /* Funciones */
 const uploadFile = async () => {
   try {
+    disabled.value = true;
+
     const formData = new FormData();
     formData.append("dni", videoData.dni);
     formData.append("name", videoData.name);
@@ -35,11 +37,21 @@ const uploadFile = async () => {
       headers: {
         "Content-Type": "multipart/form-data", // Asegúrate de establecer el encabezado correcto para archivos
       },
+      onUploadProgress: (progressEvent) => {
+        // Calcula el progreso de subida
+        const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+        uploadProgress.value = progress;
+      },
     });
 
-    console.log(response);
+    if (response.data.url) {
+      link.value = response.data.url;
+    }
+    uploadProgress.value = null;
   } catch (error) {
-    console.log(error);
+    showSnackBar("Ha ocurrido un error al guardar el video", 5000, error);
+  } finally {
+    disabled.value = false;
   }
 };
 
@@ -53,22 +65,33 @@ const copyToClipboard = async () => {
   }
 };
 
+const handleNewFile = () => {
+  videoData.dni = "";
+  videoData.name = "";
+  videoData.lastname = "";
+  videoData.video = null;
+  link.value = "";
+};
+
 const showSnackBar = (text, timeout, color) => {
   snackbar.text = text;
   snackbar.timeout = timeout;
   snackbar.color = color;
   snackbar.show = true;
 };
-
 </script>
 <template>
   <v-card>
     <v-card-title>Formulario para subir el archivo</v-card-title>
-    <v-card-text v-if="true">
+    <v-card-text v-if="!link">
       <v-form>
         <UploadForm :data="videoData" :disabled="disabled" />
       </v-form>
-      <ProgressBar class="mt-6" :load="load" />
+      <ProgressBar
+        v-if="uploadProgress !== null"
+        class="mt-6"
+        :uploadProgress="uploadProgress"
+      />
     </v-card-text>
     <v-card-text v-else>
       <v-row>
@@ -83,8 +106,23 @@ const showSnackBar = (text, timeout, color) => {
       </v-row>
     </v-card-text>
     <v-card-actions>
-      <v-btn @click="uploadFile" :disabled="disabled" color="primary" variant="flat" block
+      <v-btn
+        v-if="!link"
+        @click="uploadFile"
+        :disabled="disabled"
+        color="primary"
+        variant="flat"
+        block
         ><v-icon>mdi-upload</v-icon>subir video</v-btn
+      >
+      <v-btn
+        v-else
+        @click="handleNewFile"
+        :disabled="disabled"
+        color="primary"
+        variant="flat"
+        block
+        ><v-icon>mdi-upload</v-icon>subir nuevo video</v-btn
       >
     </v-card-actions>
     <SnackBar :snackbar="snackbar" />
