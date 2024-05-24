@@ -3,10 +3,10 @@ import { ref, reactive } from "vue";
 import UploadForm from "@/components/upload/UploadForm.vue";
 import ProgressBar from "../components/upload/ProgressBar.vue";
 import SnackBar from "@/components/SnackBar.vue";
+import { HTTP } from "@/plugins/axios";
 
 /* Variables */
 const videoData = reactive({
-  ip: "",
   dni: "",
   name: "",
   lastname: "",
@@ -25,10 +25,25 @@ const disabled = ref(false);
 /* Funciones */
 const uploadFile = async () => {
   try {
-    console.log(videoData);
-  } catch (error) {}
+    const formData = new FormData();
+    formData.append("dni", videoData.dni);
+    formData.append("name", videoData.name);
+    formData.append("lastname", videoData.lastname);
+    formData.append("video", videoData.video);
+
+    const response = await HTTP.post("/video-upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data", // Asegúrate de establecer el encabezado correcto para archivos
+      },
+    });
+
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
+/* Utilidades */
 const copyToClipboard = async () => {
   try {
     await navigator.clipboard.writeText(link.value);
@@ -44,6 +59,7 @@ const showSnackBar = (text, timeout, color) => {
   snackbar.color = color;
   snackbar.show = true;
 };
+
 </script>
 <template>
   <v-card>

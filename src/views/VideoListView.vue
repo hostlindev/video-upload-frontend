@@ -1,47 +1,25 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import VideoListTable from "@/components/VideoListTable.vue";
+import { HTTP } from "@/plugins/axios";
 
 /* Variables */
-const videoList = ref([
-  {
-    name: "Fiscal Número 1",
-    dni: "8-888-8888",
-    createDate: "2024-10-1",
-    link: "https://enlace.prueba.com/1asdsDSESe123242#?343433",
-  },
-  {
-    name: "Fiscal Número 1",
-    dni: "8-888-8888",
-    createDate: "2024-10-1",
-    link: "https://enlace.prueba.com/1asdsDSESe123242#?343433",
-  },
-  {
-    name: "Fiscal Número 1",
-    dni: "8-888-8888",
-    createDate: "2024-10-1",
-    link: "https://enlace.prueba.com/1asdsDSESe123242#?343433",
-  },
-  {
-    name: "Fiscal Número 1",
-    dni: "8-888-8888",
-    createDate: "2024-10-1",
-    link: "https://enlace.prueba.com/1asdsDSESe123242#?343433",
-  },
-  {
-    name: "Fiscal Número 1",
-    dni: "8-888-8888",
-    createDate: "2024-10-1",
-    link: "https://enlace.prueba.com/1asdsDSESe123242#?343433",
-  },
-]);
+const videoList = ref([]);
+const loading = ref(false);
 
 /* Funciones */
-const getVideoList = () => {
+onMounted(() => {
+  getVideoList();
+});
+const getVideoList = async () => {
   try {
-    console.log("Entrar");
+    loading.value = true;
+    const response = await HTTP.get("/video-upload");
+    videoList.value = response.data.videos;
   } catch (error) {
     console.log(error);
+  } finally {
+    loading.value = false;
   }
 };
 </script>
@@ -49,7 +27,11 @@ const getVideoList = () => {
   <v-card>
     <v-card-title>Lista de videos agregados</v-card-title>
     <v-card-text>
-      <VideoListTable :items="videoList" />
+      <VideoListTable
+        :items="videoList"
+        :loading="loading"
+        @getVideoList="getVideoList"
+      />
     </v-card-text>
   </v-card>
 </template>

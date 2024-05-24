@@ -1,13 +1,18 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import LoginView from "../views/LoginView.vue";
+import role from "@/plugins/role";
+import Auth from "@/plugins/router";
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/login",
       name: "login",
       component: LoginView,
+      meta: {
+        role: [],
+      },
     },
     {
       path: "/",
@@ -25,11 +30,21 @@ const router = createRouter({
           path: "/upload",
           name: "upload",
           component: () => import("../views/UploadView.vue"),
+          meta: {
+            public: false,
+            requireAuth: true,
+            role: [role.user],
+          },
         },
         {
           path: "/list",
           name: "list",
           component: () => import("../views/VideoListView.vue"),
+          meta: {
+            public: false,
+            requireAuth: true,
+            role: [role.admin],
+          },
         },
       ],
     },
@@ -53,7 +68,13 @@ const router = createRouter({
 });
 
 /* router.beforeEach((to, from, next) => {
+  const isAuthenticated = () => {
+    const token = Auth.getToken();
+    return !!token;
+  };
 
+  if (to.name !== "Login" && !isAuthenticated) next({ name: "Login" });
+  else next();
 }); */
 
 export default router;

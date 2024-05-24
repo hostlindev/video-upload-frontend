@@ -1,6 +1,7 @@
 <script setup>
 import { RouterLink, useRouter } from "vue-router";
 import { HTTP } from "@/plugins/axios";
+import Auth from "@/plugins/router";
 
 const router = useRouter();
 
@@ -11,7 +12,8 @@ const logout = async () => {
     await HTTP.post("/logout");
 
     // Eliminar el token del localStorage
-    localStorage.removeItem("token");
+    // localStorage.removeItem("token");
+    Auth.destroyToken("video_upload");
 
     // Redirigir al usuario a la página de login
     router.push({ path: "/login" });

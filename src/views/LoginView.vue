@@ -1,8 +1,9 @@
 <script setup>
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import SnackBar from "@/components/SnackBar.vue";
 import { HTTP } from "@/plugins/axios";
+import SnackBar from "@/components/SnackBar.vue";
+import Auth from "@/plugins/router";
 
 /* Variables */
 const router = useRouter();
@@ -49,7 +50,8 @@ const login = async () => {
     if (response.data.token) {
       // Lógica para guardar el token y redirigir
       // Por ejemplo, almacenar el token en localStorage
-      localStorage.setItem("token", response.data.token);
+      //localStorage.setItem("token", response.data.token);
+      Auth.saveToken(response.data.token);
       router.push({ path: "/upload" });
     }
   } catch (error) {
